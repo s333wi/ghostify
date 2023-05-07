@@ -2,18 +2,17 @@ let sort = 'asc';
 let limit = '0';
 let categoryActive = '';
 let productModal = null;
-
-let controller = null;
-let signal = null;
+let productFormModal = null;
+let isFetchingProducts = false;
+let productFormModalMethod = 'add';
 
 document.addEventListener('DOMContentLoaded', function () {
     productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    productFormModal = new bootstrap.Modal(document.getElementById('productFormModal'));
 
     loadAllProducts();
 
-    fetch('https://fakestoreapi.com/products/categories', {
-        signal: signal
-    })
+    fetch('https://fakestoreapi.com/products/categories')
         .then(res => res.json())
         .then(json => {
             let categoriesScroll = document.getElementById('categories-scroll');
@@ -23,20 +22,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 categoryElem.href = '#';
                 categoryElem.innerText = category.charAt(0).toUpperCase() + category.slice(1);
                 categoryElem.addEventListener('click', function () {
-                    removeCurrentCategory();
-                    categoryActive = category;
+                    if (!isFetchingProducts) {
+                        removeCurrentCategory();
+                        categoryActive = category;
 
-                    if (controller) {
-                        controller.abort();
+                        let loaders = document.getElementsByClassName('loader');
+                        this.classList.toggle('active');
+                        for (let loader of loaders) {
+                            loader.style.display = 'block';
+                        }
+                        document.getElementById('products').innerHTML = '';
+                        loadAllProducts();
                     }
-
-                    let loaders = document.getElementsByClassName('loader');
-                    this.classList.toggle('active');
-                    for (let loader of loaders) {
-                        loader.style.display = 'block';
-                    }
-                    document.getElementById('products').innerHTML = '';
-                    loadAllProducts();
                 });
                 categoriesScroll.appendChild(categoryElem);
             });
@@ -76,10 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
             productLoader.style.display = 'block';
             document.body.style.opacity = '0.5';
             if (result.isConfirmed) {
-                fetch(`https://fakestoreapi.com/products/${productId}`, {
-                    method: 'DELETE',
-                    signal: signal
-                })
+                fetch(`https://fakestoreapi.com/products/${productId}`)
                     .then(res => res.json())
                     .then(json => {
                         productModal.hide();
@@ -92,6 +86,78 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
             }
         });
+    });
+
+    document.getElementById('productEditBtn').addEventListener('click', function () {
+        let productId = this.getAttribute('data-product-id');
+        productFormModalMethod = 'edit';
+        productModal.hide();
+        productFormModal.show();
+        document.getElementById('productFormModalLabel').innerText = 'Edit Product';
+
+        fetch(`https://fakestoreapi.com/products/${productId}`)
+            .then(res => res.json())
+            .then(json => {
+                document.getElementById('productName').value = json.title;
+                document.getElementById('productDescription').value = json.description;
+                document.getElementById('productPrice').value = json.price;
+                document.getElementById('productImage').value = json.image;
+                document.getElementById('productCategory').value = json.category;
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    });
+
+    document.getElementById('saveProductBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        let productForm = document.getElementById('productForm');
+        let productObj = {
+            title: productForm.elements.productName.value,
+            description: productForm.elements.productDescription.value,
+            price: productForm.elements.productPrice.value,
+            image: productForm.elements.productImage.value,
+            category: productForm.elements.productCategory.value
+        }
+        if (productFormModalMethod === 'add') {
+            fetch('https://fakestoreapi.com/products', {
+                method: 'POST',
+                body: JSON.stringify(productObj)
+            })
+                .then(res => res.json())
+                .then(json => {
+                    productFormModal.hide();
+                    showToast('Success', `Product with ID ${json.id} has been added successfully.`, 'success');
+                    productForm.reset();
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+
+        } else if (productFormModalMethod === 'edit') {
+            let productId = document.getElementById('productEditBtn').getAttribute('data-product-id');
+            //get the values from the form with  the id #productForm
+            fetch(`https://fakestoreapi.com/products/${productId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(productObj),
+            })
+                .then(res => res.json())
+                .then(json => {
+                    productFormModal.hide();
+                    showToast('Success', `Product with ID ${json.id} has been updated successfully.`, 'success');
+                    productForm.reset();
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+    });
+
+    document.getElementById('addProductBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        productFormModalMethod = 'add';
+        productFormModal.show();
+        document.getElementById('productFormModalLabel').innerText = 'Add Product';
     });
 });
 
@@ -117,23 +183,16 @@ function showToast(title, text, icon) {
 }
 
 function loadAllProducts() {
-    controller = null;
-    signal = null;
-
+    isFetchingProducts = true;
     let link = `https://fakestoreapi.com/products?sort=${sort}&limit=${limit}`;
 
     if (categoryActive !== '') {
         link = `https://fakestoreapi.com/products/category/${categoryActive}?sort=${sort}&limit=${limit}`;
     }
 
-    controller = new AbortController();
-    signal = controller.signal;
-
     document.getElementById('products').innerHTML = '';
     document.getElementById('productLoader').style.display = 'block';
-    fetch(link, {
-        signal: signal
-    })
+    fetch(link)
         .then(res => res.json())
         .then(json =>
             json.forEach(product => {
@@ -142,6 +201,7 @@ function loadAllProducts() {
         )
         .then(() => {
             hideLoaders();
+            isFetchingProducts = false;
         })
         .catch(err => {
             console.log(err);
@@ -155,8 +215,7 @@ function createCard(product) {
     col.addEventListener('click', function () {
         productModal.show();
         let modalBody = document.querySelector('#productModal .modal-body');
-        console.log(modalBody);
-        let modalBodyHtml = `
+        modalBody.innerHTML = `
             <div class="row">
                 <div class="col-lg-6 col-sm-12 my-sm-5 d-flex align-items-center">
                     <img src="${product.image}" alt="${product.title}" class="img-fluid rounded">
@@ -168,7 +227,6 @@ function createCard(product) {
                 </div>
             </div>
         `;
-        modalBody.innerHTML = modalBodyHtml;
         document.getElementById('productDeleteBtn').setAttribute('data-product-id', product.id);
         document.getElementById('productEditBtn').setAttribute('data-product-id', product.id);
     });

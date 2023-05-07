@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1">
+    <title>Ghostify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+          rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/ghositfy.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top shadow">
+    <a class="navbar-brand d-flex align-items-center"><img id="logoGhostify" src="img/logo.png"
+                                                           alt="Logo web" srcset="">
+        <span id="titleGhost">GHOSTIFY</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-between">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item" id="btnHome">
+                <a class="nav-link"><i class="bi bi-house-door-fill"></i>Home</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a id="addProductBtn" href="" class="nav-link"><i class="bi bi-bag-plus"></i>Add product</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"><i class="bi-cart2 text-success"></i>Carts</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row justify-content-center mb-5">
+        <div class="col-12">
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container">
+                    <h1 class="display-4">Ghostify</h1>
+                    <p class="lead">Welcome to Ghostify - the ultimate destination for all your online shopping needs.
+                        Experience the ease and convenience of Shopify with a unique twist. Shop now and discover the
+                        Ghostify difference!</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-8 mb-3">
+            <div id="categories-scroll" class="row justify-content-center gy-3">
+            </div>
+        </div>
+        <div class="col-10 my-3">
+            <div class="row justify-content-end  me-5">
+                <div class="col-xl-1 col-sm-12">
+                    <div class="dropdownSort d-flex justify-content-sm-start justify-content-end">
+                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Sort&nbsp;<i class="bi-sort-down"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li id="sortAsc"><a class="dropdown-item" href="#" data-value="asc">Name: A to Z</a></li>
+                            <li id="sortDesc"><a class="dropdown-item" href="#" data-value="desc">Name: Z to A</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-xl-1 col-sm-12">
+                    <div class="dropdownLimit d-flex justify-content-sm-start justify-content-end">
+                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Filter&nbsp;<i class="bi-filter"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li id="limit5"><a class="dropdown-item" href="#" data-value="5">Show 5</a></li>
+                            <li id="limit10"><a class="dropdown-item" href="#" data-value="10">Show 10</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-10">
+            <div id="products" class="row px-4 justify-content-center">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loader" id="productLoader">
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+    <div class="loader-square"></div>
+</div>
+
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn btn-primary me-2" id="productEditBtn" data-product-id="">Edit&nbsp;<i
+                        class="bi bi-pencil-square"></i></button>
+                <button type="button" class="btn btn-danger" id="productDeleteBtn" data-product-id="">Delete&nbsp;<i
+                        class="bi-trash"></i>
+                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button class="btn btn-success w-75">Add to cart&nbsp;<i class="bi-cart-plus"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productFormModal" tabindex="-1" aria-labelledby="productEditModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="productForm" class="needs-validation" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productFormModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="productEditModalBody" class="modal-body">
+                    <div class="form-control mb-2">
+                        <label for="productName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="productName" name="productName" required>
+                        <div class="invalid-feedback">
+                            Please enter a name.
+                        </div>
+                    </div>
+                    <div class="form-control mb-2">
+                        <label for="productDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="productDescription" name="productDescription" rows="3"
+                                  required></textarea>
+                        <div class="invalid-feedback">
+                            Please enter a description.
+                        </div>
+                    </div>
+                    <div class="form-control mb-2">
+                        <label for="productPrice">Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="productPrice" name="productPrice" required>
+                            <div class="invalid-feedback">
+                                Please enter a price.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-control mb-2">
+                        <label for="productCategory">Category</label>
+                        <input type="text" class="form-control" id="productCategory" name="productCategory"
+                               required>
+                        <div class="invalid-feedback">
+                            Please select a category.
+                        </div>
+                    </div>
+                    <div class="form-control mb-2">
+                        <label for="productImage">Image</label>
+                        <input type="text" class="form-control" id="productImage" name="productImage" required>
+                        <div class="invalid-feedback">
+                            Please enter an image URL.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button id="saveProductBtn" class="btn btn-success w-75">Save changes&nbsp;<i class="bi bi-check2"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="js/ghostify.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>
